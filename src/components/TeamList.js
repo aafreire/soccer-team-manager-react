@@ -3,6 +3,7 @@ import { getTeams } from '../services/api';
 
 function TeamList() {
   const [teams, setTeams] = useState([]);
+  const [reserves, setReserves] = useState([]); // Novo estado para reservas
   const [playersPerTeam, setPlayersPerTeam] = useState(6);
   const [error, setError] = useState('');
 
@@ -10,7 +11,12 @@ function TeamList() {
     try {
       setError('');
       const response = await getTeams(playersPerTeam);
-      setTeams(response.data);
+      if (response.data.teams) {
+        setTeams(response.data.teams); // Atualiza os times
+      }
+      if (response.data.reserves) {
+        setReserves(response.data.reserves); // Atualiza os reservas
+      }
     } catch (error) {
       if (error.response && error.response.data && error.response.data.error) {
         setError(error.response.data.error);
@@ -49,7 +55,7 @@ function TeamList() {
         />
         <button type="submit">Generate Teams</button>
       </form>
-      {error && <div className="error-message">{error}</div>} {/* Exibe a mensagem de erro */}
+      {error && <div className="error-message">{error}</div>}
       {teams.map((team, index) => (
         <div className="team" key={index}>
           <h2>Team {index + 1}</h2>
@@ -63,6 +69,19 @@ function TeamList() {
           </ul>
         </div>
       ))}
+
+      {reserves.length > 0 && (
+        <div className="reserves">
+          <h2>Reserves</h2>
+          <ul>
+            {reserves.map((player) => (
+              <li key={player.id}>
+                {player.is_goalkeeper ? '🧤' : '⚽'} {player.name} - Level: {player.level}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }
